@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — Inbox Janitor</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 0 24px;
+        line-height: 1.7;
+        color: #1a1a1a;
+        font-size: 15px;
+      }
+      h1 { font-size: 28px; margin-bottom: 4px; }
+      h2 { font-size: 18px; margin-top: 32px; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; }
+      table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+      th, td { text-align: left; padding: 8px 12px; border: 1px solid #e0e0e0; }
+      th { background: #f5f5f5; font-weight: 600; }
+      .subtitle { color: #6b6b6b; font-size: 13px; margin-bottom: 32px; }
+      strong { color: #0078d4; }
+    </style>
+  </head>
+  <body>
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Inbox Janitor Chrome Extension &mdash; Last updated: June 2026</p>
+
+    <h2>Overview</h2>
+    <p>
+      Inbox Janitor is a Chrome browser extension that helps Microsoft Outlook / Microsoft 365 users
+      manage their email inbox by grouping senders, bulk-unsubscribing, and deleting or archiving
+      unwanted messages.
+    </p>
+
+    <h2>Data Collection</h2>
+    <p>
+      <strong>Inbox Janitor does not collect, store, or transmit your personal data to any server
+      controlled by the developer.</strong>
+    </p>
+    <ul>
+      <li>No email content is ever read or stored by the developer.</li>
+      <li>No analytics, telemetry, or tracking of any kind is implemented.</li>
+      <li>No third-party SDKs that collect user data are included.</li>
+    </ul>
+
+    <h2>Data Processing</h2>
+    <p>All data processing happens client-side, entirely within your browser:</p>
+    <ol>
+      <li>
+        <strong>OAuth tokens</strong> are stored in <code>chrome.storage.local</code> &mdash;
+        local to your browser, never sent to the developer.
+      </li>
+      <li>
+        <strong>Sender grouping data</strong> is cached in <code>chrome.storage.local</code> and
+        cleared on sign-out.
+      </li>
+      <li>
+        <strong>Email metadata</strong> is fetched directly from the Microsoft Graph API using your
+        own OAuth token. The extension communicates only with:
+        <ul>
+          <li><code>https://graph.microsoft.com</code> &mdash; Microsoft's official API</li>
+          <li><code>https://login.microsoftonline.com</code> &mdash; Microsoft's auth service</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Unsubscribe actions</strong> are performed directly by your browser, never through a
+        developer-controlled proxy.
+      </li>
+    </ol>
+
+    <h2>Permissions Used</h2>
+    <table>
+      <tr><th>Permission</th><th>Purpose</th></tr>
+      <tr><td><code>identity</code></td><td>Initiate OAuth 2.0 PKCE sign-in with Microsoft</td></tr>
+      <tr><td><code>storage</code></td><td>Store OAuth tokens and sender cache locally</td></tr>
+      <tr><td><code>sidePanel</code></td><td>Display the Inbox Janitor panel</td></tr>
+      <tr><td><code>https://graph.microsoft.com/*</code></td><td>Make authorized requests to Microsoft Graph</td></tr>
+      <tr><td><code>https://login.microsoftonline.com/*</code></td><td>Perform OAuth token exchange</td></tr>
+    </table>
+
+    <h2>Data Retention and Deletion</h2>
+    <p>
+      All locally stored data (tokens, cache) is deleted immediately when you click
+      <strong>Sign out</strong>. You can also clear all data by uninstalling the extension.
+      No data is retained on any developer server because none is collected.
+    </p>
+
+    <h2>Limited Use Disclosure</h2>
+    <p>
+      Inbox Janitor's use of data obtained from Microsoft Graph is limited to displaying sender
+      information in the UI and performing actions you explicitly request. This data is not used for
+      advertising, not transferred to third parties, and not used for any purpose unrelated to email
+      management.
+    </p>
+
+    <h2>Contact</h2>
+    <p>Questions? Email: <a href="mailto:adityarungta2048@gmail.com">adityarungta2048@gmail.com</a></p>
+  </body>
+</html>

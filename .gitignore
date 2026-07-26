@@ -1,0 +1,7 @@
+node_modules/
+dist/
+Dist-zip/
+inbox-janitor.zip
+.env
+*.local
+.claude/

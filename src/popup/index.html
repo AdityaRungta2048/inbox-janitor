@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inbox Janitor</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 13px;
+        margin: 0;
+        width: 240px;
+        background: #fff;
+        color: #1a1a1a;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #1b1b1b;
+          color: #f0f0f0;
+        }
+        .btn {
+          background: #252525;
+          border-color: #3a3a3a;
+          color: #f0f0f0;
+        }
+        .btn:hover {
+          background: #2e2e2e;
+        }
+      }
+      .wrapper {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+        text-align: center;
+      }
+      .logo {
+        font-size: 28px;
+      }
+      h1 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+      }
+      p {
+        font-size: 11px;
+        color: #6b6b6b;
+        margin: 0;
+        line-height: 1.5;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background: #0078d4;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border-color: #0078d4;
+      }
+      .btn:hover {
+        background: #106ebe;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="logo">📬</div>
+      <h1>Inbox Janitor</h1>
+      <p>Open the side panel to manage your Outlook inbox.</p>
+      <button class="btn" id="open-btn">Open Side Panel</button>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

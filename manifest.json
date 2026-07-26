@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Inbox Janitor",
+  "short_name": "Inbox Janitor",
+  "version": "1.0.0",
+  "description": "Bulk unsubscribe, group senders, and clean up your Outlook or Gmail inbox in one click.",
+
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2a0VELMFNivRgDPnHHE5cGX7oEZWxGMOOh7P4p3hLWQcK2/nL4Fy0WiZ9FKuNqsMwmAbCnN9gBL0jCnIME3Y8x+F1EMjXS0fF5KnFJq8K6gzfLKSjdDMkmFE1P5/p1M1bq+8N1Cy1tEuq3/JJ3xFQCyOG3EhnxgwFpAlLRo8m1MjVg8XGKiJB8t6bY2nBJi3D0vFxBz/iAXk2N3hhRpJbVmIb3BHEQCQ4iCqYeMW29bWQe8fxw8uSXWlf5RM9ViCcDHnnmr+1H8dWU8x1Y+WBGmzFdaK26GqiJJB9O3zM5olyoJwuVHXRIBBU7OE5ZtFaZJb6O1kFmw0GaBQtQIDAQAB",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "Open Inbox Janitor",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+
+  "permissions": [
+    "identity",
+    "storage",
+    "sidePanel"
+  ],
+
+  "host_permissions": [
+    "https://graph.microsoft.com/*",
+    "https://login.microsoftonline.com/*",
+    "https://gmail.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://accounts.google.com/*",
+    "https://oauth2.googleapis.com/*"
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}
