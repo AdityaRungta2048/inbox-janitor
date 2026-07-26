@@ -45,6 +45,10 @@ These steps require manual action and cannot be automated:
 
 Only needed if you want the Gmail provider. Skip if shipping Outlook-only first.
 
+Gmail sign-in uses `chrome.identity.getAuthToken`, so there is **no client secret** and **no
+`chromiumapp.org` redirect URI** for Google — Chrome performs the OAuth flow. You just need a
+"Chrome Extension"–type OAuth client whose item ID matches your extension ID.
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create (or select) a project.
 2. **APIs & Services → Library →** enable the **Gmail API**.
 3. **APIs & Services → OAuth consent screen:**
@@ -53,39 +57,41 @@ Only needed if you want the Gmail provider. Skip if shipping Outlook-only first.
    - Add scopes: `openid`, `email`, `profile`, and `.../auth/gmail.modify`
    - Add yourself (and any testers) under **Test users** — until the app is verified, only test users can sign in (max 100)
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID:**
-   - Application type: **Web application**
-   - Authorized redirect URI: `https://<EXTENSION_ID>.chromiumapp.org/` (same ID as Azure — see §3)
-   - Copy the **Client ID** and **Client secret**.
+   - Application type: **Chrome Extension** (older consoles call this "Chrome App")
+   - **Item ID / Application ID:** your extension ID (the 32-char ID from `chrome://extensions/` — pinned by the manifest `key`; see §3)
+   - Copy the **Client ID** (ends in `.apps.googleusercontent.com`). There is **no secret**.
+5. Put that Client ID into `manifest.json` under `"oauth2"`:
+   ```json
+   "oauth2": {
+     "client_id": "YOUR_ID.apps.googleusercontent.com",
+     "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.modify"]
+   }
+   ```
+   (The `scopes` here must match `GOOGLE_SCOPES` in `src/config.ts`.)
 
-> ⚠️ **Two Google-specific gotchas you must plan for before publishing the Gmail path:**
+> ⚠️ **Restricted-scope verification.** `gmail.modify` is a Google *restricted* scope. Public use
+> requires Google's OAuth app verification (brand review, demo video, privacy policy, homepage) and
+> possibly an annual CASA security assessment. This can take **weeks**. Budget for it, or launch
+> Outlook-only first and add Gmail once verified. See `PERMISSIONS_JUSTIFICATION.md`.
 >
-> 1. **The client secret.** Google (unlike Microsoft) requires a `client_secret` to exchange the
->    auth code for a refresh token — PKCE alone will not work. A "Web application" secret is meant to
->    be confidential, but anything you build into the extension ships in the public bundle. Decide how
->    you'll handle this (see `DECISIONS.md → D10`). Never commit the secret to git — use the `.env`
->    below, which is git-ignored.
-> 2. **Restricted-scope verification.** `gmail.modify` is a Google *restricted* scope. Public use
->    requires Google's OAuth app verification (brand review, demo video, privacy policy, homepage) and
->    possibly an annual CASA security assessment. This can take **weeks**. Budget for it, or launch
->    Outlook-only first and add Gmail once verified. See `PERMISSIONS_JUSTIFICATION.md`.
+> **Extension ID must match.** `getAuthToken` only works when the OAuth client's item ID equals the
+> running extension's ID. The manifest `key` keeps the dev ID stable; make sure the published
+> Web Store ID matches too (keep the same `key`), or update the OAuth client's item ID after publishing.
 
 ### 2. Set your Client ID(s)
 
-Create a `.env` file in the project root (never commit this — it's git-ignored):
+**Microsoft / Outlook** — create a `.env` file in the project root (never commit this — it's git-ignored):
 ```bash
-# Microsoft / Outlook
 VITE_MS_CLIENT_ID=your-azure-client-id-here
 VITE_MS_TENANT=common
-
-# Google / Gmail (only if using the Gmail provider)
-VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
-VITE_GOOGLE_CLIENT_SECRET=your-google-client-secret-here
 ```
 
-Or edit `src/config.ts` directly (Microsoft example):
+Or edit `src/config.ts` directly:
 ```typescript
 export const MS_CLIENT_ID = 'your-azure-client-id-here';
 ```
+
+**Google / Gmail** — no `.env` needed; the client ID lives in `manifest.json` `"oauth2"` (see §1b).
 
 Then rebuild:
 ```bash

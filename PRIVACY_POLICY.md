@@ -29,7 +29,7 @@ All data processing happens client-side, entirely within your browser:
    - **Google accounts:**
      - `https://gmail.googleapis.com` — Google's official Gmail API, using your credentials
      - `https://www.googleapis.com` — Google's user-profile endpoint (name/email for the signed-in account)
-     - `https://accounts.google.com` and `https://oauth2.googleapis.com` — Google's authentication and token services
+     - `https://accounts.google.com` — Google's authentication service; sign-in itself is handled by Chrome's built-in identity API, and this host is also used to revoke the token when you sign out
 4. **Unsubscribe actions** are performed directly by your browser — either via an HTTP POST to the sender's unsubscribe URL, via your provider's send-mail API (if you enable that feature), or by opening a tab — never through a developer-controlled proxy.
 
 ## Permissions Used
@@ -43,8 +43,7 @@ All data processing happens client-side, entirely within your browser:
 | `https://login.microsoftonline.com/*` | Perform the OAuth token exchange with Microsoft |
 | `https://gmail.googleapis.com/*` | Make authorized requests to the Gmail API on your behalf |
 | `https://www.googleapis.com/*` | Read your Google profile (name/email) for the signed-in account |
-| `https://accounts.google.com/*` | Perform Google OAuth sign-in |
-| `https://oauth2.googleapis.com/*` | Perform the Google OAuth token exchange |
+| `https://accounts.google.com/*` | Revoke the Google token when you sign out |
 
 ## Data Retention and Deletion
 

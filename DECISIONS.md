@@ -105,9 +105,12 @@ built into the public extension bundle — extractable by anyone who unzips it.
 | **B. Backend token-exchange proxy** | ✅ Yes — secret stays server-side | Adds server infrastructure + hosting cost; auth codes/tokens transit a developer server, which weakens the "nothing touches our servers" privacy claim and likely pushes toward full CASA. |
 | **C. Keep secret in bundle (status quo)** | ❌ No | Works today; common in practice; but a "Web application" secret is meant to be confidential and a reviewer/security-conscious user may flag it. |
 
-**Status:** Undecided — pending product owner input. Recommendation: **Option A** for a Chrome-first
-extension (secret-free, Google-recommended for extensions), accepting the single-Chrome-account
-limitation. Revisit if multi-account Gmail support becomes a requirement.
+**Status:** ✅ Decided — **Option A implemented.** `src/auth/googleAuth.ts` uses
+`chrome.identity.getAuthToken`; the client ID lives in `manifest.json` under `"oauth2"` and no secret
+is bundled. `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` were removed from `config.ts`, and the now-unused
+`https://oauth2.googleapis.com/*` host permission was dropped. Accepted trade-off: Gmail works only for
+the account signed into Chrome (no arbitrary-account picker). Revisit if multi-account Gmail support
+becomes a requirement — that would need `launchWebAuthFlow` plus a backend proxy to hold the secret.
 
 ## Future Work (v1.1 and beyond — do NOT build now)
 

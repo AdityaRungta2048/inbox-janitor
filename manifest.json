@@ -45,9 +45,13 @@
     "https://login.microsoftonline.com/*",
     "https://gmail.googleapis.com/*",
     "https://www.googleapis.com/*",
-    "https://accounts.google.com/*",
-    "https://oauth2.googleapis.com/*"
+    "https://accounts.google.com/*"
   ],
+
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.modify"]
+  },
 
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"

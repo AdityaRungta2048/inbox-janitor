@@ -66,7 +66,7 @@
           <li><code>https://login.microsoftonline.com</code> &mdash; Microsoft's auth service</li>
           <li><code>https://gmail.googleapis.com</code> &mdash; Google's official Gmail API</li>
           <li><code>https://www.googleapis.com</code> &mdash; Google's user-profile endpoint</li>
-          <li><code>https://accounts.google.com</code> / <code>https://oauth2.googleapis.com</code> &mdash; Google's auth &amp; token services</li>
+          <li><code>https://accounts.google.com</code> &mdash; Google's auth service (sign-in is handled by Chrome's identity API; also used to revoke on sign-out)</li>
         </ul>
       </li>
       <li>
@@ -85,8 +85,7 @@
       <tr><td><code>https://login.microsoftonline.com/*</code></td><td>Perform the Microsoft OAuth token exchange</td></tr>
       <tr><td><code>https://gmail.googleapis.com/*</code></td><td>Make authorized requests to the Gmail API</td></tr>
       <tr><td><code>https://www.googleapis.com/*</code></td><td>Read your Google profile (name/email)</td></tr>
-      <tr><td><code>https://accounts.google.com/*</code></td><td>Perform Google OAuth sign-in</td></tr>
-      <tr><td><code>https://oauth2.googleapis.com/*</code></td><td>Perform the Google OAuth token exchange</td></tr>
+      <tr><td><code>https://accounts.google.com/*</code></td><td>Revoke the Google token when you sign out</td></tr>
     </table>
 
     <h2>Data Retention and Deletion</h2>

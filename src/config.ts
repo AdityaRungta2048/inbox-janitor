@@ -22,17 +22,9 @@ export const CORE_SCOPES = [
   'Mail.ReadWrite',
 ];
 
-// Max messages per Graph page fetch
-// [HUMAN SETUP] Replace with your Google Cloud Console OAuth 2.0 Client ID and secret.
-// Use a "Web application" type client with chromiumapp.org redirect URI registered.
-export const GOOGLE_CLIENT_ID: string =
-  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
-  'mock-google-client-id-replace-before-testing';
-
-export const GOOGLE_CLIENT_SECRET: string =
-  (import.meta.env.VITE_GOOGLE_CLIENT_SECRET as string | undefined) ??
-  'mock-google-client-secret-replace-before-testing';
-
+// Google / Gmail sign-in uses chrome.identity.getAuthToken (see src/auth/googleAuth.ts).
+// The OAuth client ID is declared in manifest.json under "oauth2" — there is NO client
+// secret and none is bundled. These scopes must match manifest.json "oauth2.scopes".
 export const GOOGLE_SCOPES = [
   'openid',
   'email',
@@ -40,6 +32,7 @@ export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/gmail.modify',
 ];
 
+// Max messages per Graph page fetch
 export const PAGE_SIZE = 100;
 
 // Batch API limits

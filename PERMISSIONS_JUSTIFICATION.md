@@ -7,7 +7,7 @@ by the Chrome Web Store review process.
 
 | Permission | Justification |
 |---|---|
-| `identity` | Required to initiate the OAuth 2.0 Authorization Code + PKCE flow via `chrome.identity.launchWebAuthFlow`. This opens the Microsoft sign-in page and returns the authorization code. Without this permission, the extension cannot authenticate users. |
+| `identity` | Required to authenticate users. For Microsoft, it initiates the OAuth 2.0 Authorization Code + PKCE flow via `chrome.identity.launchWebAuthFlow`. For Google, it performs sign-in via `chrome.identity.getAuthToken`, where Chrome manages the token exchange and refresh (no client secret is bundled). Without this permission, the extension cannot authenticate users. |
 | `storage` | Required to persist the OAuth access token, refresh token, and sender-grouping cache in `chrome.storage.local`. Tokens must survive the extension being restarted (MV3 service workers are ephemeral). Without storage, users would need to sign in on every browser session. |
 | `sidePanel` | Required to register and open the Chrome Side Panel, which is the primary UI surface of Inbox Janitor. The side panel provides a persistent, non-intrusive panel alongside the user's browser content. |
 
@@ -22,12 +22,15 @@ by the Chrome Web Store review process.
 
 ### Google
 
+Google sign-in uses `chrome.identity.getAuthToken`, so the OAuth authorization and token exchange
+are handled internally by Chrome and require no host permission. The Google hosts below are only for
+the direct `fetch` calls the extension makes with the resulting token.
+
 | Host Permission | Justification |
 |---|---|
 | `https://gmail.googleapis.com/*` | All Google email management operations (listing message IDs, fetching `From`/`Date`/`List-Unsubscribe` metadata, `batchModify` to archive by removing the `INBOX` label or move to Trash by adding the `TRASH` label) use the Gmail API at this host. The wildcard `/*` is required because endpoints include per-message path segments (e.g., `/gmail/v1/users/me/messages/{id}`). |
 | `https://www.googleapis.com/*` | The OpenID Connect userinfo endpoint (`/oauth2/v3/userinfo`) at this host is called to display the signed-in user's name and email in the UI. |
-| `https://accounts.google.com/*` | The OAuth 2.0 authorization endpoint (`/o/oauth2/v2/auth`) at this host hosts the Google sign-in / consent screen launched via `chrome.identity.launchWebAuthFlow`. |
-| `https://oauth2.googleapis.com/*` | The Google OAuth 2.0 token endpoint (`/token`) and revocation endpoint (`/revoke`) at this host are called to exchange the authorization code for tokens, refresh tokens, and revoke on sign-out. |
+| `https://accounts.google.com/*` | The OAuth 2.0 revocation endpoint (`/o/oauth2/revoke`) at this host is called on sign-out to revoke the token, so the next sign-in shows the account picker. |
 
 ## Scopes (Microsoft Graph)
 
@@ -68,4 +71,4 @@ by the Chrome Web Store review process.
 - **`tabs`** — Not a declared permission; the extension opens new tabs via `chrome.tabs.create` only for unsubscribe links, but this API is available without a declared permission in MV3.
 - **`webRequest` / `declarativeNetRequest`** — Not needed; the extension does not inspect or modify web requests from other sites.
 - **`history`, `bookmarks`, `cookies`, `geolocation`** — None of these are used.
-- **Client secret** — The extension uses PKCE (public client), so no client secret is embedded. This is the correct, secure approach for distributed browser extensions.
+- **Client secret** — No client secret is embedded for either provider. Microsoft uses PKCE (public client); Google uses `chrome.identity.getAuthToken`, where Chrome performs the token exchange, so no secret is needed. This is the correct, secure approach for distributed browser extensions.
