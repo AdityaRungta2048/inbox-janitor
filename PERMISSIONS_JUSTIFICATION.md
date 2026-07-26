@@ -13,10 +13,21 @@ by the Chrome Web Store review process.
 
 ## Host Permissions
 
+### Microsoft
+
 | Host Permission | Justification |
 |---|---|
-| `https://graph.microsoft.com/*` | All email management operations (listing messages, grouping by sender, deleting, archiving, fetching unsubscribe headers) use the Microsoft Graph API at this host. The wildcard `/*` is required because API endpoints include path segments for individual messages (e.g., `/v1.0/me/messages/{id}`). |
+| `https://graph.microsoft.com/*` | All Microsoft email management operations (listing messages, grouping by sender, deleting, archiving, fetching unsubscribe headers) use the Microsoft Graph API at this host. The wildcard `/*` is required because API endpoints include path segments for individual messages (e.g., `/v1.0/me/messages/{id}`). |
 | `https://login.microsoftonline.com/*` | The OAuth 2.0 token endpoint (`/oauth2/v2.0/token`) at this host is called directly by the extension to exchange the authorization code for tokens and to refresh tokens. The wildcard is needed because the path includes the tenant segment (`/common/` or a specific tenant ID). |
+
+### Google
+
+| Host Permission | Justification |
+|---|---|
+| `https://gmail.googleapis.com/*` | All Google email management operations (listing message IDs, fetching `From`/`Date`/`List-Unsubscribe` metadata, `batchModify` to archive by removing the `INBOX` label or move to Trash by adding the `TRASH` label) use the Gmail API at this host. The wildcard `/*` is required because endpoints include per-message path segments (e.g., `/gmail/v1/users/me/messages/{id}`). |
+| `https://www.googleapis.com/*` | The OpenID Connect userinfo endpoint (`/oauth2/v3/userinfo`) at this host is called to display the signed-in user's name and email in the UI. |
+| `https://accounts.google.com/*` | The OAuth 2.0 authorization endpoint (`/o/oauth2/v2/auth`) at this host hosts the Google sign-in / consent screen launched via `chrome.identity.launchWebAuthFlow`. |
+| `https://oauth2.googleapis.com/*` | The Google OAuth 2.0 token endpoint (`/token`) and revocation endpoint (`/revoke`) at this host are called to exchange the authorization code for tokens, refresh tokens, and revoke on sign-out. |
 
 ## Scopes (Microsoft Graph)
 
@@ -28,6 +39,22 @@ by the Chrome Web Store review process.
 | `offline_access` | Enables the refresh token so the extension can silently refresh access without re-prompting the user on every browser session. |
 | `User.Read` | Fetches the signed-in user's profile (`GET /me`) to display their name and email in the UI. |
 | `Mail.ReadWrite` | Lists messages (`GET /me/messages`) for sender grouping, moves messages to Deleted Items (`DELETE /me/messages/{id}`), and archives messages (`POST /me/messages/{id}/move`). Both read and write are required because the core functionality includes destructive actions. |
+
+## Scopes (Google / Gmail)
+
+| Scope | Justification |
+|---|---|
+| `openid` | Standard OpenID Connect scope; identifies the signed-in Google account. |
+| `email` | Provides the user's email address shown in the extension header. |
+| `profile` | Provides basic profile claims (display name) shown in the extension header. |
+| `https://www.googleapis.com/auth/gmail.modify` | Core functionality. Read-only listing of message IDs and `From`/`Date`/`List-Unsubscribe` metadata headers for sender grouping and unsubscribe parsing; `batchModify` to **archive** (remove the `INBOX` label) and to **move to Trash** (add the `TRASH` label). `gmail.modify` is the narrowest scope that supports these label mutations. The broader `https://mail.google.com/` scope is deliberately **not** requested because Inbox Janitor never permanently deletes mail — moving to Trash is recoverable. |
+
+> **Note (Google restricted-scope verification):** `gmail.modify` is a *restricted* scope. Before the
+> Gmail path can be used by the general public, the Google Cloud project must complete Google's OAuth
+> app verification (brand review, demo video, published privacy policy, homepage), and — if any
+> restricted-scope data is ever handled by a developer-controlled server — an annual CASA security
+> assessment. Inbox Janitor keeps all data client-side, but verification is still required. Until it
+> is granted, only test users added to the OAuth consent screen (up to 100) can use Gmail sign-in.
 
 ## Incremental / Feature-Flagged Scopes (not requested at startup)
 

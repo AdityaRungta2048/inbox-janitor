@@ -21,17 +21,18 @@
       th { background: #f5f5f5; font-weight: 600; }
       .subtitle { color: #6b6b6b; font-size: 13px; margin-bottom: 32px; }
       strong { color: #0078d4; }
+      code { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; font-size: 13px; }
     </style>
   </head>
   <body>
     <h1>Privacy Policy</h1>
-    <p class="subtitle">Inbox Janitor Chrome Extension &mdash; Last updated: June 2026</p>
+    <p class="subtitle">Inbox Janitor Chrome Extension &mdash; Last updated: July 2026</p>
 
     <h2>Overview</h2>
     <p>
-      Inbox Janitor is a Chrome browser extension that helps Microsoft Outlook / Microsoft 365 users
-      manage their email inbox by grouping senders, bulk-unsubscribing, and deleting or archiving
-      unwanted messages.
+      Inbox Janitor is a Chrome browser extension that helps Microsoft Outlook / Microsoft 365 and
+      Google Gmail users manage their email inbox by grouping senders, bulk-unsubscribing, and
+      archiving or moving unwanted messages to Trash / Deleted Items.
     </p>
 
     <h2>Data Collection</h2>
@@ -57,11 +58,15 @@
         cleared on sign-out.
       </li>
       <li>
-        <strong>Email metadata</strong> is fetched directly from the Microsoft Graph API using your
-        own OAuth token. The extension communicates only with:
+        <strong>Email metadata</strong> is fetched directly from your email provider's API using
+        your own OAuth token. The extension communicates only with your provider's official
+        endpoints:
         <ul>
-          <li><code>https://graph.microsoft.com</code> &mdash; Microsoft's official API</li>
+          <li><code>https://graph.microsoft.com</code> &mdash; Microsoft's official Graph API</li>
           <li><code>https://login.microsoftonline.com</code> &mdash; Microsoft's auth service</li>
+          <li><code>https://gmail.googleapis.com</code> &mdash; Google's official Gmail API</li>
+          <li><code>https://www.googleapis.com</code> &mdash; Google's user-profile endpoint</li>
+          <li><code>https://accounts.google.com</code> / <code>https://oauth2.googleapis.com</code> &mdash; Google's auth &amp; token services</li>
         </ul>
       </li>
       <li>
@@ -73,21 +78,43 @@
     <h2>Permissions Used</h2>
     <table>
       <tr><th>Permission</th><th>Purpose</th></tr>
-      <tr><td><code>identity</code></td><td>Initiate OAuth 2.0 PKCE sign-in with Microsoft</td></tr>
+      <tr><td><code>identity</code></td><td>Initiate OAuth 2.0 sign-in with Microsoft or Google</td></tr>
       <tr><td><code>storage</code></td><td>Store OAuth tokens and sender cache locally</td></tr>
       <tr><td><code>sidePanel</code></td><td>Display the Inbox Janitor panel</td></tr>
       <tr><td><code>https://graph.microsoft.com/*</code></td><td>Make authorized requests to Microsoft Graph</td></tr>
-      <tr><td><code>https://login.microsoftonline.com/*</code></td><td>Perform OAuth token exchange</td></tr>
+      <tr><td><code>https://login.microsoftonline.com/*</code></td><td>Perform the Microsoft OAuth token exchange</td></tr>
+      <tr><td><code>https://gmail.googleapis.com/*</code></td><td>Make authorized requests to the Gmail API</td></tr>
+      <tr><td><code>https://www.googleapis.com/*</code></td><td>Read your Google profile (name/email)</td></tr>
+      <tr><td><code>https://accounts.google.com/*</code></td><td>Perform Google OAuth sign-in</td></tr>
+      <tr><td><code>https://oauth2.googleapis.com/*</code></td><td>Perform the Google OAuth token exchange</td></tr>
     </table>
 
     <h2>Data Retention and Deletion</h2>
     <p>
       All locally stored data (tokens, cache) is deleted immediately when you click
       <strong>Sign out</strong>. You can also clear all data by uninstalling the extension.
-      No data is retained on any developer server because none is collected.
+      No data is retained on any developer server because none is collected. To revoke access
+      entirely, visit your
+      <a href="https://account.live.com/consent/Manage">Microsoft account apps</a> or
+      <a href="https://myaccount.google.com/permissions">Google account permissions</a> page.
     </p>
 
-    <h2>Limited Use Disclosure</h2>
+    <h2>Google API Services &mdash; Limited Use Disclosure</h2>
+    <p>
+      Inbox Janitor's use and transfer of information received from Google APIs to any other app will
+      adhere to the
+      <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services
+      User Data Policy</a>, including the <strong>Limited Use</strong> requirements.
+    </p>
+    <p>
+      The <code>gmail.modify</code> scope is used only to list message metadata, remove the
+      <code>INBOX</code> label (archive), and add the <code>TRASH</code> label (move to Trash &mdash;
+      recoverable). Inbox Janitor does <strong>not</strong> permanently delete mail, does not use
+      humans to read your mail, does not use Gmail data to train generalized AI/ML models, and does
+      not transfer or sell this data to third parties.
+    </p>
+
+    <h2>Microsoft Graph &mdash; Limited Use Disclosure</h2>
     <p>
       Inbox Janitor's use of data obtained from Microsoft Graph is limited to displaying sender
       information in the UI and performing actions you explicitly request. This data is not used for
