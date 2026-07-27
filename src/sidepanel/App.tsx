@@ -17,7 +17,7 @@ import {
 } from '../gmail/messages.js';
 import { getUnsubscribeHeader, executeUnsubscribe } from '../graph/unsubscribe.js';
 import { getGmailUnsubscribeHeader } from '../gmail/unsubscribe.js';
-import { CACHE_TTL_MS, ENABLE_GOOGLE } from '../config.js';
+import { CACHE_TTL_MS, GMAIL_ENABLED } from '../config.js';
 import type {
   AuthTokens,
   SenderGroup,
@@ -524,8 +524,8 @@ export function App() {
           <div class="signed-out-icon">📬</div>
           <h2>Clean up your inbox</h2>
           <p>
-            Sign in with your Microsoft account to unsubscribe from senders and bulk-clean unwanted
-            mail.
+            Sign in with your {GMAIL_ENABLED ? 'Microsoft or Google' : 'Microsoft'} account to
+            unsubscribe from senders and bulk-clean unwanted mail.
           </p>
           <div
             style={{
@@ -544,7 +544,7 @@ export function App() {
             >
               {loading ? 'Signing in…' : 'Sign in with Microsoft'}
             </button>
-            {ENABLE_GOOGLE && (
+            {GMAIL_ENABLED && (
               <button
                 class="btn btn-secondary"
                 onClick={() => void handleGoogleSignIn()}

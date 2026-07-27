@@ -1,90 +1,51 @@
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_SCOPES } from '../config.js';
+import { GOOGLE_SCOPES } from '../config.js';
 import { storage } from '../lib/storage.js';
 import type { AuthTokens } from '../lib/types.js';
-import {
-  generateCodeVerifier,
-  generateCodeChallenge,
-  generateState,
-  parseCallbackUrl,
-} from './pkce.js';
 
-const REDIRECT_URI = `https://${chrome.runtime.id}.chromiumapp.org/`;
-const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
-const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
-const REVOKE_ENDPOINT = 'https://oauth2.googleapis.com/revoke';
+// Google sign-in uses chrome.identity.getAuthToken rather than a manual
+// launchWebAuthFlow + PKCE exchange. Google requires a client_secret to
+// exchange an auth code for a refresh token (PKCE cannot substitute for it),
+// and a distributed extension cannot hold a secret safely. getAuthToken avoids
+// the secret entirely: Chrome performs the OAuth flow, caches the access token,
+// and refreshes it internally. The client_id and scopes are declared in
+// manifest.json under the "oauth2" key (mirrored by GOOGLE_SCOPES here).
+//
+// Trade-off: getAuthToken only authorizes the Google account the user is signed
+// into Chrome with — there is no arbitrary-account picker — and it is
+// Chrome-only. See DECISIONS.md → D10.
 
-function buildAuthUrl(codeChallenge: string, state: string): string {
-  const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: REDIRECT_URI,
-    scope: GOOGLE_SCOPES.join(' '),
-    state,
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
-    access_type: 'offline',
-    prompt: 'select_account consent', // always show account picker + consent for refresh token
+const REVOKE_ENDPOINT = 'https://accounts.google.com/o/oauth2/revoke';
+const USERINFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v3/userinfo';
+
+/**
+ * Request an OAuth access token from Chrome. `interactive: true` shows the
+ * account/consent UI; `interactive: false` returns a cached or silently
+ * refreshed token and rejects if the user has not signed in.
+ */
+function requestToken(interactive: boolean): Promise<string> {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive, scopes: GOOGLE_SCOPES }, (token) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message ?? 'Google sign-in failed'));
+      } else if (!token) {
+        reject(new Error('Google sign-in returned no token'));
+      } else {
+        resolve(token);
+      }
+    });
   });
-  return `${AUTH_ENDPOINT}?${params.toString()}`;
 }
 
-interface GoogleTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
-  scope?: string;
-}
-
-async function exchangeCode(code: string, verifier: string): Promise<GoogleTokenResponse> {
-  const body = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    client_secret: GOOGLE_CLIENT_SECRET,
-    grant_type: 'authorization_code',
-    code,
-    redirect_uri: REDIRECT_URI,
-    code_verifier: verifier,
+function removeCachedToken(token: string): Promise<void> {
+  return new Promise((resolve) => {
+    chrome.identity.removeCachedAuthToken({ token }, () => resolve());
   });
-
-  const res = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Token exchange failed (${res.status}): ${text}`);
-  }
-
-  return res.json() as Promise<GoogleTokenResponse>;
-}
-
-async function refreshGoogleTokens(refreshToken: string): Promise<GoogleTokenResponse> {
-  const body = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    client_secret: GOOGLE_CLIENT_SECRET,
-    grant_type: 'refresh_token',
-    refresh_token: refreshToken,
-  });
-
-  const res = await fetch(TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Token refresh failed (${res.status}): ${text}`);
-  }
-
-  return res.json() as Promise<GoogleTokenResponse>;
 }
 
 async function fetchGoogleUserProfile(
   accessToken: string,
 ): Promise<{ id: string; email: string; name: string }> {
-  const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+  const res = await fetch(USERINFO_ENDPOINT, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error(`Profile fetch failed (${res.status})`);
@@ -93,41 +54,14 @@ async function fetchGoogleUserProfile(
 }
 
 export async function googleSignIn(): Promise<AuthTokens> {
-  const verifier = await generateCodeVerifier();
-  const challenge = await generateCodeChallenge(verifier);
-  const state = generateState();
-
-  const authUrl = buildAuthUrl(challenge, state);
-
-  const redirectUrl = await new Promise<string>((resolve, reject) => {
-    chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (responseUrl) => {
-      if (chrome.runtime.lastError || !responseUrl) {
-        reject(new Error(chrome.runtime.lastError?.message ?? 'Auth flow cancelled'));
-      } else {
-        resolve(responseUrl);
-      }
-    });
-  });
-
-  const parsed = parseCallbackUrl(redirectUrl);
-  if (!parsed) throw new Error('Invalid callback URL from auth flow');
-  if (parsed.state !== state) throw new Error('State mismatch — possible CSRF');
-
-  const tokenData = await exchangeCode(parsed.code, verifier);
-
-  if (!tokenData.scope?.includes('gmail.modify')) {
-    throw new Error(
-      'Gmail access was not granted. Please sign in again and tick the Gmail checkbox.',
-    );
-  }
-
-  const profile = await fetchGoogleUserProfile(tokenData.access_token);
+  const accessToken = await requestToken(true);
+  const profile = await fetchGoogleUserProfile(accessToken);
 
   const tokens: AuthTokens = {
     provider: 'google',
-    accessToken: tokenData.access_token,
-    refreshToken: tokenData.refresh_token ?? '',
-    expiresAt: Date.now() + tokenData.expires_in * 1000 - 60_000,
+    accessToken,
+    refreshToken: '', // Chrome owns the refresh token for getAuthToken flows
+    expiresAt: 0, // unused for Google — getValidGoogleToken always re-requests via getAuthToken
     userId: profile.id,
     userEmail: profile.email,
     userName: profile.name,
@@ -141,31 +75,31 @@ export async function getValidGoogleToken(): Promise<string> {
   const tokens = await storage.getTokens();
   if (!tokens || tokens.provider !== 'google') throw new Error('Not signed in with Google');
 
-  if (Date.now() < tokens.expiresAt) {
-    return tokens.accessToken;
-  }
-
-  if (!tokens.refreshToken) {
+  // Chrome returns a cached token or silently refreshes it. A rejection here
+  // means the grant is gone (revoked/expired) — force a fresh sign-in.
+  try {
+    return await requestToken(false);
+  } catch {
     await storage.clearAll();
     throw new Error('Session expired — please sign in again');
   }
-
-  const refreshed = await refreshGoogleTokens(tokens.refreshToken);
-  const updated: AuthTokens = {
-    ...tokens,
-    accessToken: refreshed.access_token,
-    refreshToken: refreshed.refresh_token ?? tokens.refreshToken,
-    expiresAt: Date.now() + refreshed.expires_in * 1000 - 60_000,
-  };
-  await storage.setTokens(updated);
-  return updated.accessToken;
 }
 
 export async function clearGoogleToken(token: string): Promise<void> {
-  // Revoke at Google so re-sign-in always shows account picker
-  try {
-    await fetch(`${REVOKE_ENDPOINT}?token=${encodeURIComponent(token)}`, { method: 'POST' });
-  } catch {
-    // Non-fatal — proceed with local sign-out regardless
+  // Clear both the token captured at sign-in and whatever Chrome currently has
+  // cached (it may have refreshed since), then revoke so re-sign-in shows the
+  // account picker. All steps are best-effort — never block local sign-out.
+  const tokensToClear = new Set<string>();
+  if (token) tokensToClear.add(token);
+  const current = await requestToken(false).catch(() => null);
+  if (current) tokensToClear.add(current);
+
+  for (const t of tokensToClear) {
+    await removeCachedToken(t);
+    try {
+      await fetch(`${REVOKE_ENDPOINT}?token=${encodeURIComponent(t)}`, { method: 'POST' });
+    } catch {
+      // Non-fatal — proceed with local sign-out regardless.
+    }
   }
 }

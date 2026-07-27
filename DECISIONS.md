@@ -88,6 +88,30 @@ pinned key, the extension ID changes every time it's loaded unpacked in a new Ch
 requiring the Azure AD app's redirect URI to be updated each time. The key is NOT a secret — it's
 the public key half of an RSA key pair and is safe to commit.
 
+## D10 — Google OAuth client secret handling (OPEN — decision required)
+
+**Context:** Microsoft's PKCE flow needs no client secret (public client). Google is different:
+its token endpoint **requires** a `client_secret` to exchange an auth code for a refresh token, and
+PKCE cannot substitute for it (confirmed against Google's OAuth docs — a token request without
+`client_secret` returns `invalid_request: client_secret is missing`). The current code
+(`src/auth/googleAuth.ts`) sends `GOOGLE_CLIENT_SECRET` from `config.ts`, which means the secret is
+built into the public extension bundle — extractable by anyone who unzips it.
+
+**Options:**
+
+| Option | Removes secret exposure? | Trade-off |
+|---|---|---|
+| **A. `chrome.identity.getAuthToken`** | ✅ Yes — no secret at all | Chrome-account-bound (only the account signed into Chrome); no stored refresh token (Chrome refreshes internally); Chrome-only. Requires a "Chrome Extension" OAuth client type. Refactor of `googleAuth.ts` + `manifest.json` (`oauth2` key). |
+| **B. Backend token-exchange proxy** | ✅ Yes — secret stays server-side | Adds server infrastructure + hosting cost; auth codes/tokens transit a developer server, which weakens the "nothing touches our servers" privacy claim and likely pushes toward full CASA. |
+| **C. Keep secret in bundle (status quo)** | ❌ No | Works today; common in practice; but a "Web application" secret is meant to be confidential and a reviewer/security-conscious user may flag it. |
+
+**Status:** ✅ Decided — **Option A implemented.** `src/auth/googleAuth.ts` uses
+`chrome.identity.getAuthToken`; the client ID lives in `manifest.json` under `"oauth2"` and no secret
+is bundled. `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` were removed from `config.ts`, and the now-unused
+`https://oauth2.googleapis.com/*` host permission was dropped. Accepted trade-off: Gmail works only for
+the account signed into Chrome (no arbitrary-account picker). Revisit if multi-account Gmail support
+becomes a requirement — that would need `launchWebAuthFlow` plus a backend proxy to hold the secret.
+
 ## Future Work (v1.1 and beyond — do NOT build now)
 
 - **v1.1:** Optional server-side auto-delete rule using `POST /me/mailFolders/inbox/messageRules`

@@ -11,6 +11,7 @@
     "lint:fix": "eslint src tests --ext .ts,.tsx --fix && prettier --write \"src/**/*.{ts,tsx,html,css}\" \"tests/**/*.ts\"",
     "test": "vitest run",
     "test:smoke": "node tests/smoke/extension.smoke.mjs",
+    "check:config": "node scripts/check-config.mjs",
     "package": "npm run build && node scripts/package.mjs",
     "ci": "npm run build && npm run typecheck && npm run lint && npm run test"
   },

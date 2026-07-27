@@ -1,15 +1,20 @@
 # Inbox Janitor
 
-A Manifest V3 Chrome extension that helps Outlook / Microsoft 365 users bulk-unsubscribe from senders and clean up their inbox.
+A Manifest V3 Chrome extension that helps Gmail, Outlook, and Microsoft 365 users bulk-unsubscribe from senders and clean up their inbox.
 
 ## Quick Start (Development)
 
 ```bash
 npm install
-cp src/config.example.ts src/config.ts   # already exists; edit VITE_MS_CLIENT_ID
+cp src/config.example.ts src/config.ts   # already exists; edit the client IDs
 npm run build
 # Load dist/ as an unpacked extension in Chrome
 ```
+
+The extension supports **two providers**. You only need to configure the one(s) you want to test:
+
+- **Microsoft / Outlook** — Azure AD app (§1). Uses OAuth PKCE, no client secret.
+- **Google / Gmail** — Google Cloud OAuth client (§1b). See the important note there about the client secret and restricted-scope verification.
 
 ## [HUMAN SETUP] — Required before live testing
 
@@ -36,9 +41,46 @@ These steps require manual action and cannot be automated:
    - `Mail.ReadWrite`
 7. Copy the **Application (client) ID** (a GUID) — you'll need it next.
 
-### 2. Set your Client ID
+### 1b. Register a Google Cloud OAuth Client (for Gmail)
 
-Create a `.env` file in the project root (never commit this):
+Only needed if you want the Gmail provider. Skip if shipping Outlook-only first.
+
+Gmail sign-in uses `chrome.identity.getAuthToken`, so there is **no client secret** and **no
+`chromiumapp.org` redirect URI** for Google — Chrome performs the OAuth flow. You just need a
+"Chrome Extension"–type OAuth client whose item ID matches your extension ID.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create (or select) a project.
+2. **APIs & Services → Library →** enable the **Gmail API**.
+3. **APIs & Services → OAuth consent screen:**
+   - User type: **External**
+   - Fill in app name, user support email, developer contact, and an **app homepage** + **privacy policy URL** (Google requires these for verification)
+   - Add scopes: `openid`, `email`, `profile`, and `.../auth/gmail.modify`
+   - Add yourself (and any testers) under **Test users** — until the app is verified, only test users can sign in (max 100)
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID:**
+   - Application type: **Chrome Extension** (older consoles call this "Chrome App")
+   - **Item ID / Application ID:** your extension ID (the 32-char ID from `chrome://extensions/` — pinned by the manifest `key`; see §3)
+   - Copy the **Client ID** (ends in `.apps.googleusercontent.com`). There is **no secret**.
+5. Put that Client ID into `manifest.json` under `"oauth2"`:
+   ```json
+   "oauth2": {
+     "client_id": "YOUR_ID.apps.googleusercontent.com",
+     "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.modify"]
+   }
+   ```
+   (The `scopes` here must match `GOOGLE_SCOPES` in `src/config.ts`.)
+
+> ⚠️ **Restricted-scope verification.** `gmail.modify` is a Google *restricted* scope. Public use
+> requires Google's OAuth app verification (brand review, demo video, privacy policy, homepage) and
+> possibly an annual CASA security assessment. This can take **weeks**. Budget for it, or launch
+> Outlook-only first and add Gmail once verified. See `PERMISSIONS_JUSTIFICATION.md`.
+>
+> **Extension ID must match.** `getAuthToken` only works when the OAuth client's item ID equals the
+> running extension's ID. The manifest `key` keeps the dev ID stable; make sure the published
+> Web Store ID matches too (keep the same `key`), or update the OAuth client's item ID after publishing.
+
+### 2. Set your Client ID(s)
+
+**Microsoft / Outlook** — create a `.env` file in the project root (never commit this — it's git-ignored):
 ```bash
 VITE_MS_CLIENT_ID=your-azure-client-id-here
 VITE_MS_TENANT=common
@@ -48,6 +90,8 @@ Or edit `src/config.ts` directly:
 ```typescript
 export const MS_CLIENT_ID = 'your-azure-client-id-here';
 ```
+
+**Google / Gmail** — no `.env` needed; the client ID lives in `manifest.json` `"oauth2"` (see §1b).
 
 Then rebuild:
 ```bash
