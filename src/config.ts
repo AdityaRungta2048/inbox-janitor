@@ -1,8 +1,8 @@
-// [HUMAN SETUP] Replace with your Azure AD Application (client) ID.
+// Azure AD Application (client) ID (public OAuth 2.0 + PKCE client — not a secret; ships in the
 // See README.md → [HUMAN SETUP] section for registration steps.
 export const MS_CLIENT_ID: string =
   (import.meta.env.VITE_MS_CLIENT_ID as string | undefined) ??
-  'mock-client-id-replace-before-testing';
+  'b32dffaf-d698-4ebc-815a-516cbefb4c7e';
 
 // 'common' supports both personal Microsoft accounts (Outlook.com/Live/Hotmail)
 // and Microsoft 365 work/school accounts in any tenant.
