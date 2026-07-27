@@ -12,6 +12,12 @@ export const MS_AUTHORITY = `https://login.microsoftonline.com/${MS_TENANT}`;
 
 export const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 
+// Feature flag: Gmail / Google sign-in.
+// OFF for the Outlook-only v1.0 public launch — Gmail's `gmail.modify` is a Google
+// restricted scope and cannot serve the public until Google verification is approved.
+// Flip to `true` for v1.1 once verified; full re-enable steps in docs/ENABLE_GMAIL_V1.1.md.
+export const GMAIL_ENABLED = false;
+
 // Core scopes — requested at sign-in. Mail.Send is incremental (requested on demand).
 export const CORE_SCOPES = [
   'openid',

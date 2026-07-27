@@ -3,7 +3,7 @@
   "name": "Inbox Janitor",
   "short_name": "Inbox Janitor",
   "version": "1.0.0",
-  "description": "Bulk unsubscribe, group senders, and clean up your Outlook or Gmail inbox in one click.",
+  "description": "Bulk unsubscribe, group senders, and clean up your Outlook or Microsoft 365 inbox in one click.",
 
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2a0VELMFNivRgDPnHHE5cGX7oEZWxGMOOh7P4p3hLWQcK2/nL4Fy0WiZ9FKuNqsMwmAbCnN9gBL0jCnIME3Y8x+F1EMjXS0fF5KnFJq8K6gzfLKSjdDMkmFE1P5/p1M1bq+8N1Cy1tEuq3/JJ3xFQCyOG3EhnxgwFpAlLRo8m1MjVg8XGKiJB8t6bY2nBJi3D0vFxBz/iAXk2N3hhRpJbVmIb3BHEQCQ4iCqYeMW29bWQe8fxw8uSXWlf5RM9ViCcDHnnmr+1H8dWU8x1Y+WBGmzFdaK26GqiJJB9O3zM5olyoJwuVHXRIBBU7OE5ZtFaZJb6O1kFmw0GaBQtQIDAQAB",
 
@@ -42,16 +42,8 @@
 
   "host_permissions": [
     "https://graph.microsoft.com/*",
-    "https://login.microsoftonline.com/*",
-    "https://gmail.googleapis.com/*",
-    "https://www.googleapis.com/*",
-    "https://accounts.google.com/*"
+    "https://login.microsoftonline.com/*"
   ],
-
-  "oauth2": {
-    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
-    "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.modify"]
-  },
 
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"

@@ -19,6 +19,13 @@ mkdirSync(OUT, { recursive: true });
 
 const ICON_URI = `data:image/png;base64,${readFileSync(resolve(ROOT, 'icons/icon128.png')).toString('base64')}`;
 
+// Mirror the app's Gmail feature flag so assets never over-promise a hidden feature.
+const GMAIL_ENABLED = /GMAIL_ENABLED\s*=\s*true/.test(readFileSync(resolve(ROOT, 'src/config.ts'), 'utf8'));
+const PROVIDERS = GMAIL_ENABLED ? ['Gmail', 'Outlook', 'Microsoft 365'] : ['Outlook', 'Microsoft 365'];
+const BADGES = PROVIDERS.map((p) => `<span class="badge">${p}</span>`).join('');
+const DELETE_TARGET = GMAIL_ENABLED ? 'Trash / Deleted Items' : 'Deleted Items';
+const PROMO_SUB_SHORT = GMAIL_ENABLED ? 'Gmail or Outlook' : 'Outlook';
+
 const USER = { userName: 'Alex Morgan', userEmail: 'alex.morgan@outlook.com' };
 const GROUPS = [
   ['Weekly Digest', 'digest@newsletters.example', 128, 0],
@@ -93,7 +100,7 @@ function compositeHtml(panelDataUri, headline, sub) {
   </style></head><body><div class="stage">
     <div class="left"><div class="brand"><img src="${ICON_URI}"/><span>Inbox Janitor</span></div>
     <h1>${headline}</h1><p class="sub">${sub}</p>
-    <div class="badges"><span class="badge">Gmail</span><span class="badge">Outlook</span><span class="badge">Microsoft 365</span></div></div>
+    <div class="badges">${BADGES}</div></div>
     <div class="right"><div class="device"><img src="${panelDataUri}"/></div></div>
   </div></body></html>`;
 }
@@ -202,7 +209,7 @@ async function main() {
     ['03-select-and-act.png', shots.selected, 'Select senders, act in bulk',
       'Archive, delete, or unsubscribe from many senders at once with a live progress bar.'],
     ['04-safe-confirm.png', shots.modal, 'Safe by default',
-      'A confirmation shows the exact message count first. “Delete” only moves to Trash / Deleted Items — never a permanent purge.'],
+      `A confirmation shows the exact message count first. “Delete” only moves to ${DELETE_TARGET} — never a permanent purge.`],
   ];
   for (const [file, b64, headline, sub] of specs) {
     await renderHtmlToPng(browser, compositeHtml(`data:image/png;base64,${b64}`, headline, sub), 1280, 800, resolve(OUT, file));
@@ -211,7 +218,7 @@ async function main() {
 
   await renderHtmlToPng(browser, promoHtml(440, 280, {
     gap: 22, pad: 34, icon: 104, titleSize: 34, subSize: 15, gapText: 8,
-    sub: 'Bulk unsubscribe &amp; clean up your Gmail or Outlook inbox.',
+    sub: `Bulk unsubscribe &amp; clean up your ${PROMO_SUB_SHORT} inbox.`,
   }), 440, 280, resolve(OUT, 'promo-small-440x280.png'));
   console.log('wrote promo-small-440x280.png');
 

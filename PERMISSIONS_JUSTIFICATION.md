@@ -3,6 +3,11 @@
 This document explains each permission and host permission requested by Inbox Janitor, as required
 by the Chrome Web Store review process.
 
+> **v1.0 scope:** The Outlook-only v1.0 build requests **only** the Microsoft entries below
+> (`identity`, `storage`, `sidePanel`, and the two `*.microsoft*.com` / `login.microsoftonline.com`
+> hosts). The **Google** host permissions and the `gmail.modify` scope are requested starting in
+> **v1.1**, when Gmail is enabled after Google verification — see `docs/ENABLE_GMAIL_V1.1.md`.
+
 ## Extension Permissions
 
 | Permission | Justification |

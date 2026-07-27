@@ -58,6 +58,7 @@ const msClientId = msFromEnv || msFromConfig || '';
 const msOk = msClientId && !/mock|your[-_ ]?azure|xxxx/i.test(msClientId);
 
 // ── Google (Point C) ─────────────────────────────────────────────────────────
+const gmailEnabled = /GMAIL_ENABLED\s*=\s*true/.test(read('src/config.ts'));
 const googleClientId = manifest.oauth2?.client_id ?? '';
 const googleOk =
   googleClientId &&
@@ -76,18 +77,26 @@ console.log(`  ${ok(msOk)} VITE_MS_CLIENT_ID   ${msOk ? msClientId : `${msClient
 console.log(`      source: ${msFromEnv ? '.env' : 'src/config.ts fallback'}`);
 console.log('');
 console.log('  Point C — Google / Gmail');
-console.log(`  ${ok(googleOk)} manifest oauth2.client_id   ${googleOk ? googleClientId : `${googleClientId || '(unset)'}  ← still a placeholder`}`);
-console.log(`      scopes: ${(manifest.oauth2?.scopes ?? []).join(', ') || '(none)'}`);
+if (!gmailEnabled) {
+  console.log('  ⏸  Gmail disabled for this build (Outlook-only v1.0 — GMAIL_ENABLED=false).');
+  console.log('      Enable in v1.1 after Google verification — see docs/ENABLE_GMAIL_V1.1.md');
+} else {
+  console.log(`  ${ok(googleOk)} manifest oauth2.client_id   ${googleOk ? googleClientId : `${googleClientId || '(unset)'}  ← still a placeholder`}`);
+  console.log(`      scopes: ${(manifest.oauth2?.scopes ?? []).join(', ') || '(none)'}`);
+}
 console.log('  ' + '─'.repeat(46));
 
-if (msOk && googleOk) {
-  console.log('  \x1b[32mReady.\x1b[0m Both client IDs are set. Run `npm run package` and upload.\n');
+const ready = msOk && (!gmailEnabled || googleOk);
+if (ready) {
+  const scope = gmailEnabled ? 'Both client IDs are' : 'The Microsoft client ID is';
+  console.log(`  \x1b[32mReady.\x1b[0m ${scope} set. Run \`npm run package\` and upload.\n`);
   process.exit(0);
 } else {
   console.log('  \x1b[33mNot ready.\x1b[0m Set the placeholder(s) above, then rebuild:');
   if (!msOk) console.log('    • Microsoft: put your Azure client ID in .env as VITE_MS_CLIENT_ID (README §1)');
-  if (!googleOk) console.log('    • Google: put your Chrome-Extension OAuth client ID in manifest.json "oauth2.client_id" (README §1b)');
+  if (gmailEnabled && !googleOk) console.log('    • Google: put your Chrome-Extension OAuth client ID in manifest.json "oauth2.client_id" (README §1b)');
   console.log('    • Register the redirect URI above in Azure (SPA platform).');
-  console.log('    • In Google Cloud, the OAuth client\'s item ID must equal the Extension ID above.\n');
+  if (gmailEnabled) console.log('    • In Google Cloud, the OAuth client\'s item ID must equal the Extension ID above.');
+  console.log('');
   process.exit(1);
 }
