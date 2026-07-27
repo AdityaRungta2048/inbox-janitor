@@ -94,5 +94,6 @@ All are 1280×800. (Chrome requires 1–5 screenshots.)
 - Marquee promo tile — `promo-marquee-1400x560.png` (1400×560, optional, for featuring)
 
 ## Privacy Policy URL
-Host `PRIVACY_POLICY.html` / `docs/index.html` on GitHub Pages and paste the URL here, e.g.
-`https://adityarungta2048.github.io/inbox-janitor/`
+Hosted via GitHub Pages (from `/docs`):
+`https://adityarungta2048.github.io/inbox-janitor/privacy.html`
+(Landing page / homepage: `https://adityarungta2048.github.io/inbox-janitor/`)

@@ -11,7 +11,7 @@ Reference: [Restricted scope verification](https://developers.google.com/identit
 
 - [ ] Gmail API enabled in the project
 - [ ] A **public homepage** on a domain you can verify (see §4)
-- [ ] A **public privacy policy** URL (you have `docs/index.html` → GitHub Pages)
+- [ ] A **public privacy policy** URL (you have `docs/privacy.html` → GitHub Pages)
 - [ ] Homepage + privacy policy on the **same domain**, and that domain **verified in
       [Google Search Console](https://search.google.com/search-console)** and added under
       OAuth consent screen → *Authorized domains*
@@ -28,8 +28,8 @@ Reference: [Restricted scope verification](https://developers.google.com/identit
 | App name | `Inbox Janitor` |
 | User support email | `adityarungta2048@gmail.com` |
 | App logo | `store-assets/source-icon.jpg` (120×120+, <1 MB) |
-| Application home page | your homepage URL (see §4) |
-| Application privacy policy | your GitHub Pages URL, e.g. `https://adityarungta2048.github.io/inbox-janitor/` |
+| Application home page | `https://adityarungta2048.github.io/inbox-janitor/` |
+| Application privacy policy | `https://adityarungta2048.github.io/inbox-janitor/privacy.html` |
 | Authorized domains | `github.io` (or your custom domain) |
 | Developer contact | `adityarungta2048@gmail.com` |
 | User type | External |
@@ -93,9 +93,8 @@ Use a throwaway Google account with a few newsletters so the list looks real.
 Google needs a public **home page** describing the app, on the **same verified domain** as the
 privacy policy. Cheapest option that reuses what you have:
 
-- Turn on GitHub Pages from `/docs` (privacy policy already lives at `docs/index.html`).
-- Add a simple `docs/home.html` (or make `docs/index.html` a landing page that links to the policy)
-  so you have a distinct homepage URL and privacy URL on `adityarungta2048.github.io`.
+- The GitHub Pages site already provides a **homepage** (`docs/index.html`) and a distinct
+  **privacy policy** (`docs/privacy.html`) on `adityarungta2048.github.io` — both requirements met.
 - Verify `github.io` ownership in Search Console (HTML-file method: drop the verification file in
   `docs/`), then list it under *Authorized domains*.
 

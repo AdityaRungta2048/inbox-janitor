@@ -9,7 +9,7 @@
 import puppeteer from 'puppeteer';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -200,6 +200,19 @@ async function main() {
   await page.waitForSelector('.modal', { timeout: 5000 });
   await new Promise((r) => setTimeout(r, 150));
   shots.modal = await page.screenshot({ encoding: 'base64' });
+
+  // Clean panel screenshots (no marketing frame) for the docs/ landing page.
+  const SITE_IMG = resolve(ROOT, 'docs/img');
+  mkdirSync(SITE_IMG, { recursive: true });
+  for (const [name, b64] of Object.entries({
+    'panel-signed-out.png': shots.signedOut,
+    'panel-list.png': shots.list,
+    'panel-select.png': shots.selected,
+    'panel-modal.png': shots.modal,
+  })) {
+    writeFileSync(resolve(SITE_IMG, name), Buffer.from(b64, 'base64'));
+    console.log('wrote docs/img/' + name);
+  }
 
   const specs = [
     ['01-signed-out.png', shots.signedOut, 'One click to a cleaner inbox',

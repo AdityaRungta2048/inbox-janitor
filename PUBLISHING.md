@@ -13,7 +13,7 @@ and tested; what remains is hosting the privacy policy, filling the dashboard, a
 - Manifest requests only the two Microsoft hosts (no unused/Gmail permissions)
 - Icons, 4 screenshots (1280×800), promo tiles (440×280, 1400×560) → `store-assets/`
 - Listing copy → `STORE_LISTING.md`; permission text → `PERMISSIONS_JUSTIFICATION.md`
-- Privacy policy → `docs/index.html`; package → `inbox-janitor.zip`
+- Landing page → `docs/index.html`; privacy policy → `docs/privacy.html`; package → `inbox-janitor.zip`
 - $5 developer fee + 2FA
 
 ## ⛳ Account prerequisites (confirm once)
@@ -22,10 +22,12 @@ and tested; what remains is hosting the privacy policy, filling the dashboard, a
 
 ---
 
-## Step 1 — Host the privacy policy (do this first; nothing else works without the URL)
+## Step 1 — Host the site (do this first; nothing else works without the URL)
 1. GitHub → repo → **Settings → Pages**
-2. **Deploy from a branch** → branch `master` (or your working branch) → folder **`/docs`** → Save
-3. After ~1 min the policy is live at: **`https://adityarungta2048.github.io/inbox-janitor/`**
+2. **Deploy from a branch** → branch `master` → folder **`/docs`** → Save
+3. After ~1 min it's live:
+   - Landing page (homepage): **`https://adityarungta2048.github.io/inbox-janitor/`**
+   - Privacy policy: **`https://adityarungta2048.github.io/inbox-janitor/privacy.html`**
 
 ## Step 2 — Create the item
 1. Go to <https://chrome.google.com/webstore/devconsole>
@@ -59,7 +61,7 @@ and tested; what remains is hosting the privacy policy, filling the dashboard, a
   - **Personal communications** — email metadata (sender, date, subject, message IDs, `List-Unsubscribe` headers)
   - **Authentication information** — the OAuth token
 - [ ] **Certify (3 boxes):** not selling data · using it only for the single purpose · not for creditworthiness/lending
-- [ ] **Privacy policy URL:** paste the GitHub Pages URL from Step 1
+- [ ] **Privacy policy URL:** `https://adityarungta2048.github.io/inbox-janitor/privacy.html`
 
 ## Step 5 — Distribution tab
 - [ ] **Visibility:** Public   ·   **Regions:** All   ·   **Price:** Free
