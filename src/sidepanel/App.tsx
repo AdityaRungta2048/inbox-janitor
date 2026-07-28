@@ -243,8 +243,21 @@ export function App() {
   }, []);
 
   const handleGoogleSignIn = useCallback(async () => {
-    setLoading(true);
     setError(null);
+    // Gmail hosts are optional permissions — request them from this click (a user
+    // gesture) so existing Outlook users are never prompted for Google access.
+    const granted = await chrome.permissions.request({
+      origins: [
+        'https://gmail.googleapis.com/*',
+        'https://www.googleapis.com/*',
+        'https://accounts.google.com/*',
+      ],
+    });
+    if (!granted) {
+      setError('Gmail access was not granted.');
+      return;
+    }
+    setLoading(true);
     setLoadingMsg('Signing in…');
     try {
       const t = await googleSignIn();
