@@ -51,11 +51,6 @@
     "https://accounts.google.com/*"
   ],
 
-  "oauth2": {
-    "client_id": "893107406648-qq17cn67254325944s08n7k3pfvi3r06.apps.googleusercontent.com",
-    "scopes": ["openid", "email", "profile", "https://www.googleapis.com/auth/gmail.modify"]
-  },
-
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   }

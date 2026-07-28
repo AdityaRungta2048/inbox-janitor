@@ -28,9 +28,15 @@ export const CORE_SCOPES = [
   'Mail.ReadWrite',
 ];
 
-// Google / Gmail sign-in uses chrome.identity.getAuthToken (see src/auth/googleAuth.ts).
-// The OAuth client ID is declared in manifest.json under "oauth2" — there is NO client
-// secret and none is bundled. These scopes must match manifest.json "oauth2.scopes".
+// Google / Gmail sign-in uses chrome.identity.launchWebAuthFlow with the OAuth 2.0
+// implicit flow (response_type=token) — no client secret is bundled. This client ID is
+// a public identifier (safe to ship). The OAuth client must be a "Web application" type
+// with redirect URIs https://<extension-id>.chromiumapp.org/ registered for both the dev
+// and published extension IDs.
+export const GOOGLE_CLIENT_ID: string =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
+  '893107406648-qq17cn67254325944s08n7k3pfvi3r06.apps.googleusercontent.com';
+
 export const GOOGLE_SCOPES = [
   'openid',
   'email',
