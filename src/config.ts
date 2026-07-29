@@ -35,7 +35,7 @@ export const CORE_SCOPES = [
 // and published extension IDs.
 export const GOOGLE_CLIENT_ID: string =
   (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
-  '893107406648-qq17cn67254325944s08n7k3pfvi3r06.apps.googleusercontent.com';
+  '893107406648-3c4j6m9hc4b5s6e6di24u3ee2kuvmkrr.apps.googleusercontent.com';
 
 export const GOOGLE_SCOPES = [
   'openid',
