@@ -1,8 +1,9 @@
-import type { AuthTokens, SenderCache } from './types.js';
+import type { AuthTokens, SenderCache, Prefs } from './types.js';
 
 const KEYS = {
   AUTH: 'ij_auth',
   CACHE: 'ij_cache',
+  PREFS: 'ij_prefs',
 } as const;
 
 function get<T>(key: string): Promise<T | null> {
@@ -33,6 +34,10 @@ export const storage = {
   getCache: () => get<SenderCache>(KEYS.CACHE),
   setCache: (cache: SenderCache) => set(KEYS.CACHE, cache),
   clearCache: () => remove(KEYS.CACHE),
+
+  // UI preferences — deliberately survive sign-out (not user data).
+  getPrefs: () => get<Prefs>(KEYS.PREFS),
+  setPrefs: (prefs: Prefs) => set(KEYS.PREFS, prefs),
 
   clearAll: async () => {
     await remove(KEYS.AUTH);
