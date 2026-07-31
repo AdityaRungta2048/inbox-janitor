@@ -18,6 +18,26 @@ export interface SenderGroup {
   representativeMessageId: string;
 }
 
+/**
+ * A row in the sender list. Either a single address or several addresses from
+ * the same domain merged into one unit (see lib/domain.ts). Every action —
+ * archive, delete, unsubscribe — applies to all of `addresses`.
+ */
+export interface DisplayGroup {
+  key: string; // domain for a cluster, email address otherwise
+  name: string;
+  sublabel: string;
+  count: number;
+  latestDate: string;
+  addresses: string[];
+  representativeMessageIds: string[];
+  isCluster: boolean;
+}
+
+export interface Prefs {
+  groupByDomain: boolean;
+}
+
 export type SortKey = 'count' | 'date' | 'alpha';
 
 export interface SenderCache {

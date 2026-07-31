@@ -18,9 +18,10 @@ import {
 import { getUnsubscribeHeader, executeUnsubscribe } from '../graph/unsubscribe.js';
 import { getGmailUnsubscribeHeader } from '../gmail/unsubscribe.js';
 import { CACHE_TTL_MS, GMAIL_ENABLED } from '../config.js';
+import { clusterByDomain, asSingles } from '../lib/domain.js';
 import type {
   AuthTokens,
-  SenderGroup,
+  DisplayGroup,
   SenderCache,
   SortKey,
   UnsubscribeResult,
@@ -78,7 +79,7 @@ function ProgressBar({ done, total, label, onCancel }: ProgressProps) {
 interface ConfirmModalProps {
   action: 'archive' | 'delete';
   provider: 'microsoft' | 'google';
-  senders: SenderGroup[];
+  senderCount: number;
   totalMessages: number;
   onConfirm: () => void;
   onCancel: () => void;
@@ -87,7 +88,7 @@ interface ConfirmModalProps {
 function ConfirmModal({
   action,
   provider,
-  senders,
+  senderCount,
   totalMessages,
   onConfirm,
   onCancel,
@@ -102,7 +103,7 @@ function ConfirmModal({
           <p>
             This will {isDelete ? `move to ${deleteTarget}` : 'archive'}{' '}
             <strong>{plural(totalMessages, 'message')}</strong> from{' '}
-            <strong>{plural(senders.length, 'sender')}</strong>.
+            <strong>{plural(senderCount, 'sender')}</strong>.
           </p>
           {isDelete && (
             <p style={{ marginTop: 8, color: 'var(--text-subtle)' }}>
@@ -206,7 +207,25 @@ export function App() {
   const [pendingIds, setPendingIds] = useState<string[] | null>(null);
   const [unsubResults, setUnsubResults] = useState<UnsubscribeResult[] | null>(null);
   const [isThrottled, setIsThrottled] = useState(false);
+  const [groupByDomain, setGroupByDomain] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Load the domain-grouping preference (persists across sign-out)
+  useEffect(() => {
+    void (async () => {
+      const prefs = await storage.getPrefs();
+      if (prefs) setGroupByDomain(prefs.groupByDomain);
+    })();
+  }, []);
+
+  const toggleGroupByDomain = useCallback(() => {
+    setGroupByDomain((prev) => {
+      const next = !prev;
+      void storage.setPrefs({ groupByDomain: next });
+      return next;
+    });
+    setSelected(new Set()); // keys change meaning between modes
+  }, []);
 
   // Load tokens from storage on mount
   useEffect(() => {
@@ -322,15 +341,18 @@ export function App() {
     setLoading(false);
   }, []);
 
-  // Sorted + filtered sender list
-  const displayedGroups = useMemo(() => {
+  // Sorted + filtered sender list, optionally clustered by sending domain
+  const displayedGroups = useMemo<DisplayGroup[]>(() => {
     if (!cache) return [];
-    let groups = [...cache.groups];
+    let groups = groupByDomain ? clusterByDomain(cache.groups) : asSingles(cache.groups);
 
     const q = search.toLowerCase().trim();
     if (q) {
       groups = groups.filter(
-        (g) => g.email.toLowerCase().includes(q) || g.name.toLowerCase().includes(q),
+        (g) =>
+          g.name.toLowerCase().includes(q) ||
+          g.key.toLowerCase().includes(q) ||
+          g.addresses.some((a) => a.includes(q)),
       );
     }
 
@@ -342,36 +364,42 @@ export function App() {
         groups.sort((a, b) => b.latestDate.localeCompare(a.latestDate));
         break;
       case 'alpha':
-        groups.sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+        groups.sort((a, b) => a.name.localeCompare(b.name));
         break;
     }
 
     return groups;
-  }, [cache, search, sortKey]);
+  }, [cache, search, sortKey, groupByDomain]);
 
-  const toggleSelect = useCallback((email: string) => {
+  const toggleSelect = useCallback((key: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(email)) next.delete(email);
-      else next.add(email);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }, []);
 
   const toggleSelectAll = useCallback(() => {
-    const visible = new Set(displayedGroups.map((g) => g.email));
+    const visible = new Set(displayedGroups.map((g) => g.key));
     setSelected((prev) => {
-      const allSelected = [...visible].every((e) => prev.has(e));
+      const allSelected = [...visible].every((k) => prev.has(k));
       if (allSelected) {
-        return new Set([...prev].filter((e) => !visible.has(e)));
+        return new Set([...prev].filter((k) => !visible.has(k)));
       }
       return new Set([...prev, ...visible]);
     });
   }, [displayedGroups]);
 
   const selectedGroups = useMemo(
-    () => displayedGroups.filter((g) => selected.has(g.email)),
+    () => displayedGroups.filter((g) => selected.has(g.key)),
     [displayedGroups, selected],
+  );
+
+  // A cluster stands for several addresses — every action fans out across them.
+  const selectedAddressCount = useMemo(
+    () => selectedGroups.reduce((n, g) => n + g.addresses.length, 0),
+    [selectedGroups],
   );
 
   const handleBulkAction = useCallback(
@@ -388,16 +416,20 @@ export function App() {
         const stored = await storage.getTokens();
         const isGoogle = stored?.provider === 'google';
 
-        let allIds: string[] = [];
+        // Fan out across every address in each group (a domain cluster holds several)
+        const seen = new Set<string>();
         for (const g of selectedGroups) {
-          if (controller.signal.aborted) return;
-          const ids = isGoogle
-            ? await getGmailMessageIdsBySender(g.email)
-            : await getMessageIdsBySender(g.email);
-          allIds = allIds.concat(ids);
+          for (const address of g.addresses) {
+            if (controller.signal.aborted) return;
+            const ids = isGoogle
+              ? await getGmailMessageIdsBySender(address)
+              : await getMessageIdsBySender(address);
+            for (const id of ids) seen.add(id);
+          }
         }
 
         if (!controller.signal.aborted) {
+          const allIds = [...seen];
           setPendingIds(allIds);
           setConfirmTotal(allIds.length);
           setConfirmAction(action);
@@ -452,7 +484,7 @@ export function App() {
       }
 
       if (cache) {
-        const removedEmails = new Set(selectedGroups.map((g) => g.email));
+        const removedEmails = new Set(selectedGroups.flatMap((g) => g.addresses));
         const updated: SenderCache = {
           ...cache,
           groups: cache.groups.filter((g) => !removedEmails.has(g.email)),
@@ -480,32 +512,56 @@ export function App() {
     const results: UnsubscribeResult[] = [];
     setProgress({ done: 0, total: selectedGroups.length, label: 'Unsubscribing' });
 
+    // Best outcome wins when a cluster's addresses unsubscribe differently.
+    const RANK: UnsubscribeResult['status'][] = [
+      'done',
+      'opened_in_tab',
+      'needs_manual',
+      'no_header',
+      'failed',
+    ];
+
     for (let i = 0; i < selectedGroups.length; i++) {
       if (controller.signal.aborted) break;
       const g = selectedGroups[i];
       if (!g) continue;
 
-      let result: UnsubscribeResult = { email: g.email, status: 'failed' };
-      try {
-        const header = isGoogle
-          ? await getGmailUnsubscribeHeader(g.representativeMessageId)
-          : await getUnsubscribeHeader(g.representativeMessageId);
+      // Each address in a domain cluster can be on its own mailing list, so
+      // attempt every one rather than stopping at the first.
+      const statuses: UnsubscribeResult['status'][] = [];
+      let note = '';
 
-        if (!header) {
-          result = { email: g.email, status: 'no_header', message: 'No unsubscribe header found.' };
-        } else {
-          const r = await executeUnsubscribe(header, false);
-          result = { ...r, email: g.email };
+      for (const messageId of g.representativeMessageIds) {
+        if (controller.signal.aborted) break;
+        try {
+          const header = isGoogle
+            ? await getGmailUnsubscribeHeader(messageId)
+            : await getUnsubscribeHeader(messageId);
+
+          if (!header) {
+            statuses.push('no_header');
+          } else {
+            const r = await executeUnsubscribe(header, false);
+            statuses.push(r.status);
+          }
+        } catch (e) {
+          statuses.push('failed');
+          if (!note) note = e instanceof Error ? e.message : 'Unknown error';
         }
-      } catch (e) {
-        result = {
-          email: g.email,
-          status: 'failed',
-          message: e instanceof Error ? e.message : 'Unknown error',
-        };
       }
 
-      results.push(result);
+      const best = RANK.find((s) => statuses.includes(s)) ?? 'failed';
+      const succeeded = statuses.filter((s) => s === 'done').length;
+      const detail =
+        g.addresses.length > 1
+          ? `${succeeded}/${g.addresses.length} addresses unsubscribed`
+          : note || undefined;
+
+      results.push({
+        email: g.isCluster ? `${g.name} (${g.key})` : g.key,
+        status: best,
+        ...(detail ? { message: detail } : {}),
+      });
       setProgress({ done: i + 1, total: selectedGroups.length, label: 'Unsubscribing' });
     }
 
@@ -654,6 +710,18 @@ export function App() {
             <button class="btn btn-ghost btn-sm" onClick={() => void loadSenders()} title="Refresh">
               ↺
             </button>
+            <label
+              class="toolbar-toggle"
+              title="Merge every address from the same domain into one row (e.g. all binance.com senders)"
+            >
+              <input
+                type="checkbox"
+                checked={groupByDomain}
+                onChange={toggleGroupByDomain}
+                data-testid="group-by-domain"
+              />
+              Group by domain
+            </label>
           </div>
 
           {cache.isPartial && (
@@ -673,21 +741,27 @@ export function App() {
             ) : (
               displayedGroups.map((g) => (
                 <div
-                  key={g.email}
-                  class={`sender-item ${selected.has(g.email) ? 'selected' : ''}`}
-                  onClick={() => toggleSelect(g.email)}
+                  key={g.key}
+                  class={`sender-item ${selected.has(g.key) ? 'selected' : ''}`}
+                  onClick={() => toggleSelect(g.key)}
+                  title={g.isCluster ? g.addresses.join('\n') : g.key}
                 >
                   <input
                     type="checkbox"
                     class="sender-checkbox"
-                    checked={selected.has(g.email)}
-                    onChange={() => toggleSelect(g.email)}
+                    checked={selected.has(g.key)}
+                    onChange={() => toggleSelect(g.key)}
                     onClick={(e) => e.stopPropagation()}
-                    aria-label={`Select ${g.name || g.email}`}
+                    aria-label={`Select ${g.name}`}
                   />
                   <div class="sender-info">
-                    <div class="sender-name">{g.name || g.email}</div>
-                    {g.name && g.name !== g.email && <div class="sender-email">{g.email}</div>}
+                    <div class="sender-name">
+                      {g.name}
+                      {g.isCluster && (
+                        <span class="cluster-badge">{g.addresses.length} addresses</span>
+                      )}
+                    </div>
+                    {g.sublabel !== g.name && <div class="sender-email">{g.sublabel}</div>}
                   </div>
                   <div class="sender-meta">
                     <span class="sender-count">{g.count}</span>
@@ -709,7 +783,7 @@ export function App() {
             <div class="action-bar">
               {displayedGroups.length > 0 && (
                 <button class="btn btn-ghost btn-sm" onClick={toggleSelectAll}>
-                  {displayedGroups.every((g) => selected.has(g.email))
+                  {displayedGroups.every((g) => selected.has(g.key))
                     ? 'Deselect all'
                     : 'Select all'}
                 </button>
@@ -754,7 +828,7 @@ export function App() {
         <ConfirmModal
           action={confirmAction}
           provider={tokens.provider}
-          senders={selectedGroups}
+          senderCount={selectedAddressCount}
           totalMessages={confirmTotal}
           onConfirm={() => void handleConfirm()}
           onCancel={() => {

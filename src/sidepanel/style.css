@@ -275,6 +275,36 @@ body {
   background: var(--bg);
 }
 
+.toolbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-subtle);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.toolbar-toggle input {
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+}
+
+.cluster-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-subtle);
+  font-size: 9px;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .sort-select {
   padding: 5px 8px;
   border-radius: var(--radius);
