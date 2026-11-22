@@ -19,3 +19,7 @@ cpSync(resolve(root, 'icons'), resolve(dist, 'icons'), {
   filter: (src) => statSync(src).isDirectory() || src.toLowerCase().endsWith('.png'),
 });
 console.log('✓ Copied icons/ (PNG only)');
+
+// Translated store name and summary (manifest __MSG_appName__ / __MSG_appDesc__).
+cpSync(resolve(root, '_locales'), resolve(dist, '_locales'), { recursive: true });
+console.log('✓ Copied _locales/');

@@ -49,14 +49,27 @@ function parseFragment(
   }
 }
 
+// Until Google finishes reviewing the Gmail permission, only test users get
+// through. Everyone else sees Google's "Access blocked" page and closes it, which
+// reaches us as "The user did not approve access." Say what probably happened.
+const GOOGLE_STOPPED =
+  'Gmail sign-in did not finish. If Google said "Access blocked" or "app not verified", ' +
+  "Gmail access is still waiting for Google's review. Outlook, Hotmail and Live accounts work now.";
+
 function launchFlow(url: string, interactive: boolean): Promise<string> {
   return new Promise((resolve, reject) => {
     chrome.identity.launchWebAuthFlow({ url, interactive }, (responseUrl) => {
-      if (chrome.runtime.lastError || !responseUrl) {
-        reject(new Error(chrome.runtime.lastError?.message ?? 'Google sign-in was cancelled'));
-      } else {
+      const message = chrome.runtime.lastError?.message;
+      if (!message && responseUrl && !/[#&]error=access_denied/.test(responseUrl)) {
         resolve(responseUrl);
+        return;
       }
+      const stopped = !message || /did not approve/i.test(message);
+      reject(
+        new Error(
+          interactive && stopped ? GOOGLE_STOPPED : (message ?? 'Google sign-in was cancelled'),
+        ),
+      );
     });
   });
 }

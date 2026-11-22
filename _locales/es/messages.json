@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "Inbox Janitor - Baja masiva y limpieza de correo"
+  },
+  "appDesc": {
+    "message": "Date de baja de boletines en bloque, agrupa el correo por remitente y archiva o borra miles de emails en Outlook o Gmail en un clic."
+  }
+}

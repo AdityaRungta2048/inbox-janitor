@@ -151,6 +151,14 @@ function UnsubResultsModal({ results, onClose }: UnsubResultsModalProps) {
           </ul>
         </div>
         <div class="modal-footer">
+          <a
+            class="small-link"
+            href="https://chromewebstore.google.com/detail/lagoddlfnhlflblgfakcenjonpkpkpmo/reviews"
+            target="_blank"
+            rel="noopener"
+          >
+            Inbox lighter? Rate Inbox Janitor
+          </a>
           <button class="btn btn-primary btn-sm" onClick={onClose}>
             Done
           </button>
@@ -629,6 +637,35 @@ export function App() {
               {error}
             </div>
           )}
+          <p class="more-by">
+            More by AR Labs:{' '}
+            <a
+              class="small-link"
+              href="https://chromewebstore.google.com/detail/fnolbffnpeamdpjepbgmlajdeakfecfb"
+              target="_blank"
+              rel="noopener"
+            >
+              Prism - Color Picker
+            </a>
+            {' · '}
+            <a
+              class="small-link"
+              href="https://chromewebstore.google.com/detail/khjanpephopmklcgpjjimbdnpbnknnga"
+              target="_blank"
+              rel="noopener"
+            >
+              Website Roast
+            </a>
+            {' · '}
+            <a
+              class="small-link"
+              href="https://chromewebstore.google.com/detail/eoaacdkiehhbjfebnnabbammefccioef"
+              target="_blank"
+              rel="noopener"
+            >
+              Grabbit - Web Scraper
+            </a>
+          </p>
         </div>
       </div>
     );

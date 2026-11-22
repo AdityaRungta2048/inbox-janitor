@@ -6,12 +6,12 @@
 > requests no Google permissions.
 
 ## Name
-Inbox Janitor
+Inbox Janitor - Bulk Unsubscribe & Email Cleaner
 
 ## Short Description (max 132 characters)
-Bulk unsubscribe and clean up your Outlook / Microsoft 365 inbox — group senders, archive, delete, or unsubscribe in a click.
+Bulk unsubscribe from newsletters, group mail by sender, and archive or delete thousands of emails in Outlook or Gmail in one click.
 
-*(Current: 124 characters — within limit)*
+*(132 characters. From v1.2.0 the name and summary come from `_locales/<lang>/messages.json`, translated into 13 languages; the store reads them from the uploaded zip.)*
 
 ## Category
 Productivity

@@ -647,3 +647,27 @@ body {
     color: #ffc107;
   }
 }
+
+.small-link {
+  color: var(--accent);
+  font-size: 12px;
+  text-decoration: none;
+  margin-right: auto;
+  align-self: center;
+}
+
+.small-link:hover {
+  text-decoration: underline;
+}
+
+.more-by {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--text-subtle);
+  text-align: center;
+}
+
+.more-by .small-link {
+  font-size: 11px;
+  margin: 0;
+}
