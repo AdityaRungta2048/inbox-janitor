@@ -24,7 +24,7 @@ and tested; what remains is hosting the privacy policy, filling the dashboard, a
 
 ## Step 1 — Host the site (do this first; nothing else works without the URL)
 1. GitHub → repo → **Settings → Pages**
-2. **Deploy from a branch** → branch `master` → folder **`/docs`** → Save
+2. **Deploy from a branch** → branch `main` → folder **`/docs`** → Save
 3. After ~1 min it's live:
    - Landing page (homepage): **`https://adityarungta2048.github.io/inbox-janitor/`**
    - Privacy policy: **`https://adityarungta2048.github.io/inbox-janitor/privacy.html`**
