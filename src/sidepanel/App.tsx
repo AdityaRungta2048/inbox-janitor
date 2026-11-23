@@ -665,6 +665,15 @@ export function App() {
             >
               Grabbit - Web Scraper
             </a>
+            {' · '}
+            <a
+              class="small-link"
+              href="https://chromewebstore.google.com/detail/lhblgcjhbejkkfedmbpmpflglidlkppg"
+              target="_blank"
+              rel="noopener"
+            >
+              Tab Debt - Tab Manager
+            </a>
           </p>
         </div>
       </div>

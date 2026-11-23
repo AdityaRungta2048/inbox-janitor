@@ -3,6 +3,6 @@
     "message": "Inbox Janitor - 批量退订与邮箱清理"
   },
   "appDesc": {
-    "message": "一键批量退订邮件订阅，按发件人分组，在 Outlook 或 Gmail 中一次归档或删除成千上万封邮件。"
+    "message": "一键批量退订邮件订阅，按发件人分组，在 Outlook 中一次归档或删除成千上万封邮件。即将支持 Gmail。"
   }
 }

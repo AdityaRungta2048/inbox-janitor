@@ -9,9 +9,9 @@
 Inbox Janitor - Bulk Unsubscribe & Email Cleaner
 
 ## Short Description (max 132 characters)
-Bulk unsubscribe from newsletters, group mail by sender, and archive or delete thousands of emails in Outlook or Gmail in one click.
+Bulk unsubscribe from newsletters, group mail by sender, and archive or delete thousands of emails in Outlook. Gmail coming soon.
 
-*(132 characters. From v1.2.0 the name and summary come from `_locales/<lang>/messages.json`, translated into 13 languages; the store reads them from the uploaded zip.)*
+*(129 characters. From v1.2.0 the name and summary come from `_locales/<lang>/messages.json`, translated into 13 languages; the store reads them from the uploaded zip.)*
 
 ## Category
 Productivity
@@ -45,6 +45,7 @@ Inbox Janitor connects to your Microsoft account and groups your email by sender
 
 • Personal Outlook (outlook.com, live.com, hotmail.com)
 • Microsoft 365 work and school accounts
+• Gmail: coming soon (waiting for Google's approval)
 
 Note: Some corporate M365 tenants require an IT admin to grant consent for third-party apps. If you see an "Admin approval required" screen, ask your IT administrator to approve Inbox Janitor.
 

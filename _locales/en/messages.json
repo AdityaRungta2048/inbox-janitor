@@ -4,7 +4,7 @@
     "description": "Extension name in Chrome and the Web Store (max 75 chars)."
   },
   "appDesc": {
-    "message": "Bulk unsubscribe from newsletters, group mail by sender, and archive or delete thousands of emails in Outlook or Gmail in one click.",
+    "message": "Bulk unsubscribe from newsletters, group mail by sender, and archive or delete thousands of emails in Outlook. Gmail coming soon.",
     "description": "Web Store summary (max 132 chars)."
   }
 }
