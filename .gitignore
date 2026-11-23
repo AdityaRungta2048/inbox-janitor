@@ -4,4 +4,3 @@ Dist-zip/
 inbox-janitor*.zip
 .env
 *.local
-.claude/
