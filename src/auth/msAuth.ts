@@ -98,6 +98,26 @@ async function fetchUserProfile(accessToken: string): Promise<{
   }>;
 }
 
+/** Turns Microsoft's ?error=…&error_description=AADSTS… redirect into something a person can act on. */
+function microsoftRefusal(url: string): string | null {
+  let params: URLSearchParams;
+  try {
+    params = new URL(url).searchParams;
+  } catch {
+    return null;
+  }
+  const error = params.get('error');
+  if (!error) return null;
+  const description = params.get('error_description') ?? error;
+  if (/AADSTS(65001|90094|90095)/.test(description)) {
+    return 'Your work or school account needs your IT admin to approve Inbox Janitor before you can sign in. Ask them to allow it, or sign in with a personal Outlook, Hotmail or Live account.';
+  }
+  if (/AADSTS65004/.test(description)) {
+    return 'Sign-in was cancelled on the Microsoft permission screen. Try again and choose Accept to let Inbox Janitor read your senders.';
+  }
+  return `Microsoft refused the sign-in: ${description.split(/\r?\n/)[0]}`;
+}
+
 export async function signIn(): Promise<AuthTokens> {
   const verifier = await generateCodeVerifier();
   const challenge = await generateCodeChallenge(verifier);
@@ -115,6 +135,8 @@ export async function signIn(): Promise<AuthTokens> {
     });
   });
 
+  const refusal = microsoftRefusal(redirectUrl);
+  if (refusal) throw new Error(refusal);
   const parsed = parseCallbackUrl(redirectUrl);
   if (!parsed) throw new Error('Invalid callback URL from auth flow');
   if (parsed.state !== state) throw new Error('State mismatch — possible CSRF');
