@@ -16,7 +16,7 @@ const { signIn } = await import('../../src/auth/msAuth.js');
 function redirectWith(params: Record<string, string>) {
   launchWebAuthFlow.mockImplementation((opts: { url: string }, cb: FlowCallback) => {
     const state = new URL(opts.url).searchParams.get('state') ?? '';
-    cb(`https://test-ext.chromiumapp.org/?${new URLSearchParams({ ...params, state })}`);
+    cb(`https://test-ext.chromiumapp.org/?${new URLSearchParams({ ...params, state }).toString()}`);
   });
 }
 
